@@ -1,6 +1,8 @@
 Debug/
 Release/
-Study/Debug/
-Study/Release/
 
-.vs/
+OpenGL/Debug
+OpenGL/Release
+
+.vs
+.vscode
