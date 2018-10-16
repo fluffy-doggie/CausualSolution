@@ -21,10 +21,29 @@
     <ClCompile Include="glad.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Shader.cc">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="stb_image.cc">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="utils.h">
+    <ClInclude Include="Shader.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="stb_image.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\01-05.frag" />
+    <None Include="shaders\01-05.vert" />
+    <None Include="shaders\01-06.frag" />
+    <None Include="shaders\01-06.vert" />
+    <None Include="shaders\01-07.frag" />
+    <None Include="shaders\01-07.vert" />
+    <None Include="shaders\01-08.frag" />
+    <None Include="shaders\01-08.vert" />
   </ItemGroup>
 </Project>

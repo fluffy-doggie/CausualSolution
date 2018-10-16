@@ -118,10 +118,23 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="glad.c" />
+    <ClCompile Include="Shader.cc" />
     <ClCompile Include="source.cc" />
+    <ClCompile Include="stb_image.cc" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="utils.h" />
+    <ClInclude Include="Shader.h" />
+    <ClInclude Include="stb_image.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\01-05.frag" />
+    <None Include="shaders\01-05.vert" />
+    <None Include="shaders\01-06.frag" />
+    <None Include="shaders\01-06.vert" />
+    <None Include="shaders\01-07.frag" />
+    <None Include="shaders\01-07.vert" />
+    <None Include="shaders\01-08.frag" />
+    <None Include="shaders\01-08.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

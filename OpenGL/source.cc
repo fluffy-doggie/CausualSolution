@@ -1,12 +1,22 @@
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <tbox/tbox.h>
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
+
+#include "Shader.h"
+#include "stb_image.h"
 
 #include <iostream>
+#include <fstream>
+#include <string>
+
 using namespace std;
 
 #pragma comment(lib, "glfw3dll.lib")
-
+#pragma comment(lib, "tbox.lib")
 /*
 * Modern OpenGL
 *
@@ -37,12 +47,25 @@ using namespace std;
 *
 */
 
+// camera = projection * veiw * model * local
+// 矩阵运算的顺序是相反的
+
 // 窗口大小调整回调函数
 // --------------------
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 
 // 输入处理函数
 void process_input(GLFWwindow *window);
+
+// 工具函数
+// ------------------
+unsigned int create_shader_by_file(const char *fname, GLenum type);
+unsigned int create_shader_by_string(const char *shader_source, GLenum type);
+unsigned int create_texture_by_file(const char *fname);
+
+glm::vec3 camera_pos = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 camera_front = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 camera_up = glm::vec3(0.0f, 1.0f, 0.0f);
 
 int main(int argc, char *argv)
 {
@@ -67,76 +90,51 @@ int main(int argc, char *argv)
 		return -1;
 	}
 
-	// 现代OpenGL需要至少设置一个顶点和一个片段着色器
-	// location : 输入变量的位置值
-
-	int success; char info_log[512];
-
-	const char *vertex_shader_source = R"(
-		#version 330 core
-		layout(location = 0) in vec3 aPos;
-
-		out vec4 vertexColor;
-
-		void main ()
-		{
-			gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0f);
-			vertexColor = vec4(0.5f, 0.0f, 0.0f, 0.0f);
-		}
-	)";
-
-	unsigned int vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-	// 附加着色器源码到着色器对象
-	glShaderSource(vertex_shader, 1, &vertex_shader_source, NULL);
-	// 编译着色器
-	glCompileShader(vertex_shader);
-	glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(vertex_shader, 512, NULL, info_log);
-		cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << info_log << endl;
-	}
-
-	const char *fragment_shader_source = R"(
-		#version 330 core
-		out vec4 FragColor;
-
-		in vec4 vertexColor;
-
-		void main ()
-		{
-			FragColor = vertexColor;
-		}
-	)";
-
-	unsigned int fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragment_shader, 1, &fragment_shader_source, NULL);
-	glCompileShader(fragment_shader);
-	glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(fragment_shader, 512, NULL, info_log);
-		cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << info_log << endl;
-	}
-
-	// 着色器程序对象
-	// --------------
-	unsigned int shader_program = glCreateProgram();
-	// 附加着色器
-	glAttachShader(shader_program, vertex_shader);
-	glAttachShader(shader_program, fragment_shader);
-	// 链接成最终对象
-	glLinkProgram(shader_program);
-
-	// 删除着色器对象
-	glDeleteShader(vertex_shader);
-	glDeleteShader(fragment_shader);
+	glEnable(GL_DEPTH_TEST);
+	//stbi_set_flip_vertically_on_load(true);
 
 	float vertices[] = {
-		+0.5f, +0.5f, +0.0f,
-		+0.5f, -0.5f, +0.0f,
-		-0.5f, -0.5f, +0.0f,
-		-0.5f, +0.5f, +0.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+	 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+	-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+	-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+	 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+	 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 	};
 
 	unsigned int indices[] = {
@@ -174,16 +172,18 @@ int main(int argc, char *argv)
 	// 所以必须手动指定输入数据的哪一部分对应着着色器的哪一个属性
 	// ----------------------------------------------------
 	// 调用时使用的VBO是当前绑定的VBO
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);	// 坐标
+	glEnableVertexAttribArray(0);	// 激活
+
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+
 	// 参数1: 对应着色器中的位置(location)值
 	// 参数2: 指定顶点属性的维度
 	// 参数3: 指定数据类型
 	// 参数4: 是否标准化（映射到-1~1）
 	// 参数5: 连续顶点属性的间隔
 	// 参数6: 位置数据在缓冲中起始位置的偏移量
-
-	// 激活VAO
-	glEnableVertexAttribArray(0);
 
 	// 解绑VBO
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -195,6 +195,35 @@ int main(int argc, char *argv)
 	// 填充模式
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
+	auto texture1 = create_texture_by_file(".\\container.jpg");
+	auto texture2 = create_texture_by_file(".\\awesomeface.png");
+
+	CShader shader_program(".\\shaders\\01-08.vert", ".\\shaders\\01-08.frag");
+	shader_program.use();
+	shader_program.uniform("texture1", 0);
+	shader_program.uniform("texture2", 1);
+
+	//glm::mat4 view(1.0f);
+	//view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+	//shader_program.uniform("view", glm::value_ptr(view), 4);
+
+	glm::mat4 projection;
+	projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+	shader_program.uniform("projection", glm::value_ptr(projection), 4);
+
+	glm::vec3 cube_positions[] = {
+		glm::vec3(0.0f,  0.0f,  0.0f),
+		glm::vec3(2.0f,  5.0f, -15.0f),
+		glm::vec3(-1.5f, -2.2f, -2.5f),
+		glm::vec3(-3.8f, -2.0f, -12.3f),
+		glm::vec3(2.4f, -0.4f, -3.5f),
+		glm::vec3(-1.7f,  3.0f, -7.5f),
+		glm::vec3(1.3f, -2.0f, -2.5f),
+		glm::vec3(1.5f,  2.0f, -2.5f),
+		glm::vec3(1.5f,  0.2f, -1.5f),
+		glm::vec3(-1.3f,  1.0f, -1.5f)
+	};
+
 	while (!glfwWindowShouldClose(window))
 	{
 		// 处理输入
@@ -203,14 +232,37 @@ int main(int argc, char *argv)
 		// 渲染指令
 		// ---------------
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// 使用程序对象
-		glUseProgram(shader_program);
+		// 绑定纹理
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture1);
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, texture2);
+
+		// 使用(激活)着色器程序对象
+		shader_program.use();
+
+		glm::mat4 view(1.0f);
+		view = glm::lookAt(camera_pos, camera_pos + camera_front, camera_up);
+		shader_program.uniform("view", glm::value_ptr(view), 4);
+
 		glBindVertexArray(VAO);
+		for (auto i = 0; i < 10; ++i)
+		{
+			glm::mat4 model(1.0f);
+			model = glm::translate(model, cube_positions[i]);
+			float angle = 20.0f * i;
+			model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+			shader_program.uniform("model", glm::value_ptr(model), 4);
+
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
 		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-		//glDrawArrays(GL_TRIANGLES, 0, 3);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		//glDrawArrays(GL_TRIANGLES, 0, 36);
+
 		glBindVertexArray(0);
 		// 参数2: 顶点数组起始索引
 		// 参数3: 绘制顶点个数
@@ -234,10 +286,113 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 	glViewport(0, 0, width, height);
 }
 
+static float last_time = 0.0f;
 void process_input(GLFWwindow *window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 	{
 		glfwSetWindowShouldClose(window, true);
+		return;
 	}
+
+	float current_time = glfwGetTime();
+	float camera_speed = (current_time - last_time) * 2.5f;
+	last_time = current_time;
+
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+	{
+		camera_pos += camera_speed * camera_front;
+	}
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+	{
+		camera_pos -= camera_speed * camera_front;
+	}
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+	{
+		camera_pos -= glm::normalize(glm::cross(camera_front, camera_up)) * camera_speed;
+	}
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+	{
+		camera_pos += glm::normalize(glm::cross(camera_front, camera_up)) * camera_speed;
+	}
+}
+
+unsigned int create_shader_by_string(const char *shader_source, GLenum type)
+{
+	// 创建Shader
+	unsigned int shader = glCreateShader(type);
+	// 设置源码
+	glShaderSource(shader, 1, &shader_source, NULL);
+	// 编译Shader
+	glCompileShader(shader);
+
+	// 检查错误
+	int success;
+	char log_buffer[512];
+	glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+	if (!success)
+	{
+		glGetShaderInfoLog(shader, 512, NULL, log_buffer);
+		cout << "ERROR::SHADER::" << type << "::COMPILATION_FAILED\n" << log_buffer << endl;
+		return 0;
+	}
+
+	return shader;
+}
+
+unsigned int create_shader_by_file(const char *fname, GLenum type)
+{
+	auto shader_file = ifstream(fname, ios::in);
+
+	istreambuf_iterator<char> beg(shader_file), end;
+
+	string content(beg, end);
+
+	return create_shader_by_string(content.c_str(), type);
+}
+
+unsigned int create_texture_by_file(const char *fname)
+{
+	unsigned int texture;
+	glGenTextures(1, &texture);
+
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	int width, height, channels;
+	unsigned char *image_data = stbi_load(fname, &width, &height, &channels, 0);
+	if (image_data)
+	{
+		// 参数1: 指定纹理目标（当前绑定到GL_TEXTURE_2D上的对象）
+		// 参数2: 指定多级渐远纹理的级别
+		// 参数3: 将纹理储存为何种格式
+		// 参数4: 纹理宽度
+		// 参数5: 纹理高度
+		// 参数6: 恒为0
+		// 参数7: 源图片格式
+		// 参数8: 源图片数据类型
+		// 参数9: 图像数据
+		if (strstr(fname, ".png"))
+		{
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image_data);
+		}
+		else {
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image_data);
+		}
+		
+		// 自动生成多级渐远纹理
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else 
+	{
+		cout << "Failed to load texture::" << fname << endl;
+		texture = 0;
+	}
+
+	stbi_image_free(image_data);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	return texture;
 }
