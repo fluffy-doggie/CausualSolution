@@ -17,6 +17,7 @@ public:
 	void uniform(const char *name, int value);
 	void uniform(const char *name, float value);
 
+	void uniform(const char *name, float a, float b, float c);
 	void uniform(const char *name, float *values, unsigned int length);
 
 private:

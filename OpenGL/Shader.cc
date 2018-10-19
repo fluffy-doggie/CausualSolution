@@ -99,6 +99,12 @@ void CShader::uniform(const char * name, float value)
 	glUniform1f(glGetUniformLocation(_shader_id, name), value);
 }
 
+void CShader::uniform(const char * name, float a, float b, float c)
+{
+	auto location = glGetUniformLocation(_shader_id, name);
+	glUniform3f(location, a, b, c);
+}
+
 void CShader::uniform(const char * name, float *values, unsigned int length)
 {
 	auto location = glGetUniformLocation(_shader_id, name);

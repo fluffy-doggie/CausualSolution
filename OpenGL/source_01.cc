@@ -15,8 +15,6 @@
 
 using namespace std;
 
-#pragma comment(lib, "glfw3dll.lib")
-#pragma comment(lib, "tbox.lib")
 /*
 * Modern OpenGL
 *
@@ -52,10 +50,12 @@ using namespace std;
 
 // 窗口大小调整回调函数
 // --------------------
-void framebuffer_size_callback(GLFWwindow *window, int width, int height);
+static void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 
 // 输入处理函数
-void process_input(GLFWwindow *window);
+static void process_keybord_input(GLFWwindow *window);
+static void process_mouse_callback(GLFWwindow *, double, double);
+static void process_mouse_scroll(GLFWwindow *window, double offset_x, double offset_y);
 
 // 工具函数
 // ------------------
@@ -67,7 +67,9 @@ glm::vec3 camera_pos = glm::vec3(0.0f, 0.0f, 3.0f);
 glm::vec3 camera_front = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 camera_up = glm::vec3(0.0f, 1.0f, 0.0f);
 
-int main(int argc, char *argv)
+float yaw, pitch;
+float fov = 45.0f;
+int __main_01(int argc, char *argv[])
 {
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -83,6 +85,9 @@ int main(int argc, char *argv)
 	}
 	glfwMakeContextCurrent(window);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetCursorPosCallback(window, process_mouse_callback);
+	glfwSetScrollCallback(window, process_mouse_scroll);
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
@@ -203,81 +208,81 @@ int main(int argc, char *argv)
 	shader_program.uniform("texture1", 0);
 	shader_program.uniform("texture2", 1);
 
-	//glm::mat4 view(1.0f);
-	//view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-	//shader_program.uniform("view", glm::value_ptr(view), 4);
+//glm::mat4 view(1.0f);
+//view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+//shader_program.uniform("view", glm::value_ptr(view), 4);
+
+glm::vec3 cube_positions[] = {
+	glm::vec3(0.0f,  0.0f,  0.0f),
+	glm::vec3(2.0f,  5.0f, -15.0f),
+	glm::vec3(-1.5f, -2.2f, -2.5f),
+	glm::vec3(-3.8f, -2.0f, -12.3f),
+	glm::vec3(2.4f, -0.4f, -3.5f),
+	glm::vec3(-1.7f,  3.0f, -7.5f),
+	glm::vec3(1.3f, -2.0f, -2.5f),
+	glm::vec3(1.5f,  2.0f, -2.5f),
+	glm::vec3(1.5f,  0.2f, -1.5f),
+	glm::vec3(-1.3f,  1.0f, -1.5f)
+};
+
+while (!glfwWindowShouldClose(window))
+{
+	// 处理输入
+	process_keybord_input(window);
+
+	// 渲染指令
+	// ---------------
+	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// 绑定纹理
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture1);
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, texture2);
+
+	// 使用(激活)着色器程序对象
+	shader_program.use();
 
 	glm::mat4 projection;
-	projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+	projection = glm::perspective(glm::radians(fov), 800.0f / 600.0f, 0.1f, 100.0f);
 	shader_program.uniform("projection", glm::value_ptr(projection), 4);
 
-	glm::vec3 cube_positions[] = {
-		glm::vec3(0.0f,  0.0f,  0.0f),
-		glm::vec3(2.0f,  5.0f, -15.0f),
-		glm::vec3(-1.5f, -2.2f, -2.5f),
-		glm::vec3(-3.8f, -2.0f, -12.3f),
-		glm::vec3(2.4f, -0.4f, -3.5f),
-		glm::vec3(-1.7f,  3.0f, -7.5f),
-		glm::vec3(1.3f, -2.0f, -2.5f),
-		glm::vec3(1.5f,  2.0f, -2.5f),
-		glm::vec3(1.5f,  0.2f, -1.5f),
-		glm::vec3(-1.3f,  1.0f, -1.5f)
-	};
+	glm::mat4 view(1.0f);
+	view = glm::lookAt(camera_pos, camera_pos + camera_front, camera_up);
+	shader_program.uniform("view", glm::value_ptr(view), 4);
 
-	while (!glfwWindowShouldClose(window))
+	glBindVertexArray(VAO);
+	for (auto i = 0; i < 10; ++i)
 	{
-		// 处理输入
-		process_input(window);
+		glm::mat4 model(1.0f);
+		model = glm::translate(model, cube_positions[i]);
+		float angle = 20.0f * i;
+		model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+		shader_program.uniform("model", glm::value_ptr(model), 4);
 
-		// 渲染指令
-		// ---------------
-		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		// 绑定纹理
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture1);
-
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, texture2);
-
-		// 使用(激活)着色器程序对象
-		shader_program.use();
-
-		glm::mat4 view(1.0f);
-		view = glm::lookAt(camera_pos, camera_pos + camera_front, camera_up);
-		shader_program.uniform("view", glm::value_ptr(view), 4);
-
-		glBindVertexArray(VAO);
-		for (auto i = 0; i < 10; ++i)
-		{
-			glm::mat4 model(1.0f);
-			model = glm::translate(model, cube_positions[i]);
-			float angle = 20.0f * i;
-			model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-			shader_program.uniform("model", glm::value_ptr(model), 4);
-
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}
-		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-		//glDrawArrays(GL_TRIANGLES, 0, 36);
-
-		glBindVertexArray(0);
-		// 参数2: 顶点数组起始索引
-		// 参数3: 绘制顶点个数
-
-		// 检查是否有触发事件
-		glfwPollEvents();
-		// 交换颜色缓冲（双缓冲）
-		glfwSwapBuffers(window);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 	}
+	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	//glDrawArrays(GL_TRIANGLES, 0, 36);
 
-	glDeleteVertexArrays(1, &VAO);
-	glDeleteBuffers(1, &VBO);
+	glBindVertexArray(0);
+	// 参数2: 顶点数组起始索引
+	// 参数3: 绘制顶点个数
 
-	glfwTerminate();
-	return 0;
+	// 检查是否有触发事件
+	glfwPollEvents();
+	// 交换颜色缓冲（双缓冲）
+	glfwSwapBuffers(window);
+}
+
+glDeleteVertexArrays(1, &VAO);
+glDeleteBuffers(1, &VBO);
+
+glfwTerminate();
+return 0;
 }
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)
@@ -287,7 +292,7 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 }
 
 static float last_time = 0.0f;
-void process_input(GLFWwindow *window)
+void process_keybord_input(GLFWwindow *window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 	{
@@ -315,6 +320,60 @@ void process_input(GLFWwindow *window)
 	{
 		camera_pos += glm::normalize(glm::cross(camera_front, camera_up)) * camera_speed;
 	}
+}
+
+float last_x, last_y;
+bool first_mouse = true;
+void process_mouse_callback(GLFWwindow *window, double x, double y)
+{
+	if (first_mouse)
+	{
+		last_x = x;
+		last_y = y;
+		first_mouse = false;
+	}
+
+	float offset_x = x - last_x;
+	float offset_y = last_y - y;
+	last_x = x;
+	last_y = y;
+
+	float sensitivity = 0.05f;
+	offset_x *= sensitivity;
+	offset_y *= sensitivity;
+
+	yaw   += offset_x;
+	pitch += offset_y;
+
+	if (pitch > 89.0f)
+	{
+		pitch = 89.0f;
+	}
+	if (pitch < -89.0f)
+	{
+		pitch = 89.0f;
+	}
+
+	glm::vec3 front;
+	front.x = cos(glm::radians(pitch)) * cos(glm::radians(yaw));
+	front.y = sin(glm::radians(pitch));
+	front.z = cos(glm::radians(pitch)) * sin(glm::radians(yaw));
+	camera_front = glm::normalize(front);
+}
+
+void process_mouse_scroll(GLFWwindow *window, double offset_x, double offset_y)
+{
+	fov -= offset_y;
+	if (fov <= 1.0f)
+	{
+		fov = 1.0f;
+	}
+	if (fov >= 45.0f)
+	{
+		fov = 45.0f;
+	}
+
+	cout << fov << endl;
 }
 
 unsigned int create_shader_by_string(const char *shader_source, GLenum type)

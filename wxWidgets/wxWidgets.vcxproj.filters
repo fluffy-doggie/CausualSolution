@@ -15,49 +15,22 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="glad.c">
+    <ClCompile Include="source.cc">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Shader.cc">
+    <ClCompile Include="MyFrame.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="stb_image.cc">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="source_01.cc">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="source_02.cc">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="main.cc">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Camera.cpp">
+    <ClCompile Include="MyApp.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Shader.h">
+    <ClInclude Include="MyFrame.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="stb_image.h">
+    <ClInclude Include="MyApp.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="shaders\01-05.frag" />
-    <None Include="shaders\01-05.vert" />
-    <None Include="shaders\01-06.frag" />
-    <None Include="shaders\01-06.vert" />
-    <None Include="shaders\01-07.frag" />
-    <None Include="shaders\01-07.vert" />
-    <None Include="shaders\01-08.frag" />
-    <None Include="shaders\01-08.vert" />
-    <None Include="shaders\02-01.frag" />
-    <None Include="shaders\02-01.vert" />
   </ItemGroup>
 </Project>

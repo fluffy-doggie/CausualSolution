@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.27703.2042
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpenGL", "OpenGL\OpenGL.vcxproj", "{69FBD5CB-D6FF-40C8-8C42-5D95D4A2FE8F}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wxWidgets", "wxWidgets\wxWidgets.vcxproj", "{7A11225D-2DC7-4B88-85EA-BA017229861A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,14 @@ Global
 		{69FBD5CB-D6FF-40C8-8C42-5D95D4A2FE8F}.Release|x64.Build.0 = Release|x64
 		{69FBD5CB-D6FF-40C8-8C42-5D95D4A2FE8F}.Release|x86.ActiveCfg = Release|Win32
 		{69FBD5CB-D6FF-40C8-8C42-5D95D4A2FE8F}.Release|x86.Build.0 = Release|Win32
+		{7A11225D-2DC7-4B88-85EA-BA017229861A}.Debug|x64.ActiveCfg = Debug|x64
+		{7A11225D-2DC7-4B88-85EA-BA017229861A}.Debug|x64.Build.0 = Debug|x64
+		{7A11225D-2DC7-4B88-85EA-BA017229861A}.Debug|x86.ActiveCfg = Debug|Win32
+		{7A11225D-2DC7-4B88-85EA-BA017229861A}.Debug|x86.Build.0 = Debug|Win32
+		{7A11225D-2DC7-4B88-85EA-BA017229861A}.Release|x64.ActiveCfg = Release|x64
+		{7A11225D-2DC7-4B88-85EA-BA017229861A}.Release|x64.Build.0 = Release|x64
+		{7A11225D-2DC7-4B88-85EA-BA017229861A}.Release|x86.ActiveCfg = Release|Win32
+		{7A11225D-2DC7-4B88-85EA-BA017229861A}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

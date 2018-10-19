@@ -4,5 +4,8 @@ Release/
 OpenGL/Debug
 OpenGL/Release
 
+wxWidgets/Debug
+wxWidgets/Release
+
 .vs
 .vscode
