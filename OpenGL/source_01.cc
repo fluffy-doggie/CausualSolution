@@ -247,11 +247,11 @@ while (!glfwWindowShouldClose(window))
 
 	glm::mat4 projection;
 	projection = glm::perspective(glm::radians(fov), 800.0f / 600.0f, 0.1f, 100.0f);
-	shader_program.uniform("projection", glm::value_ptr(projection), 4);
+	shader_program.uniformMat("projection", glm::value_ptr(projection), 4);
 
 	glm::mat4 view(1.0f);
 	view = glm::lookAt(camera_pos, camera_pos + camera_front, camera_up);
-	shader_program.uniform("view", glm::value_ptr(view), 4);
+	shader_program.uniformMat("view", glm::value_ptr(view), 4);
 
 	glBindVertexArray(VAO);
 	for (auto i = 0; i < 10; ++i)
@@ -260,7 +260,7 @@ while (!glfwWindowShouldClose(window))
 		model = glm::translate(model, cube_positions[i]);
 		float angle = 20.0f * i;
 		model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-		shader_program.uniform("model", glm::value_ptr(model), 4);
+		shader_program.uniformMat("model", glm::value_ptr(model), 4);
 
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 	}

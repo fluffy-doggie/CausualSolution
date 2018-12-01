@@ -8,7 +8,7 @@ public:
 	static unsigned int create_shader_by_string(const char *, GLenum);
 
 	CShader(const char *vertex_shader_path, const char *fragment_shader_path);
-	~CShader();
+	~CShader() = default;
 
 	void use() {
 		glUseProgram(_shader_id);
@@ -36,7 +36,7 @@ public:
 		glUniform4f(glGetUniformLocation(_shader_id, name), a, b, c, d);
 	}
 
-	void uniform(const char *name, float *values, unsigned int length) {
+	void uniformVec(const char *name, float *values, unsigned int length) {
 		auto location = glGetUniformLocation(_shader_id, name);
 
 		switch (length)
@@ -52,6 +52,25 @@ public:
 			break;
 		case 4:
 			glUniform4fv(location, length, values);
+			break;
+		default:
+			break;
+		}
+	}
+
+	void uniformMat(const char *name, float *values, unsigned int length) {
+		auto location = glGetUniformLocation(_shader_id, name);
+
+		switch (length)
+		{
+		case 2:
+			glUniformMatrix2fv(location, 1, GL_FALSE, values);
+			break;
+		case 3:
+			glUniformMatrix3fv(location, 1, GL_FALSE, values);
+			break;
+		case 4:
+			glUniformMatrix4fv(location, 1, GL_FALSE, values);
 			break;
 		default:
 			break;

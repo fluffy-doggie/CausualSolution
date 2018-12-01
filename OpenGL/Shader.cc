@@ -73,8 +73,3 @@ CShader::CShader(const char *vertex_shader_path, const char *fragment_shader_pat
 	glDeleteShader(vshader);
 	glDeleteShader(fshader);
 }
-
-
-CShader::~CShader()
-{
-}
