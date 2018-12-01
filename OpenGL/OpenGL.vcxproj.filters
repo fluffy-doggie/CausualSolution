@@ -57,7 +57,17 @@
     <None Include="shaders\01-07.vert" />
     <None Include="shaders\01-08.frag" />
     <None Include="shaders\01-08.vert" />
-    <None Include="shaders\02-01.frag" />
-    <None Include="shaders\02-01.vert" />
+    <None Include="shaders\02-01-cube.frag" />
+    <None Include="shaders\02-01-cube.vert" />
+    <None Include="shaders\02-01-lamp.frag" />
+    <None Include="shaders\02-01-lamp.vert" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="container.jpg">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="awesomeface.png">
+      <Filter>资源文件</Filter>
+    </Image>
   </ItemGroup>
 </Project>

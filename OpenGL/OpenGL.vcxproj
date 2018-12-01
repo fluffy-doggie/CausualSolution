@@ -139,8 +139,14 @@
     <None Include="shaders\01-07.vert" />
     <None Include="shaders\01-08.frag" />
     <None Include="shaders\01-08.vert" />
-    <None Include="shaders\02-01.frag" />
-    <None Include="shaders\02-01.vert" />
+    <None Include="shaders\02-01-cube.frag" />
+    <None Include="shaders\02-01-cube.vert" />
+    <None Include="shaders\02-01-lamp.frag" />
+    <None Include="shaders\02-01-lamp.vert" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="awesomeface.png" />
+    <Image Include="container.jpg" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

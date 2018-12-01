@@ -15,17 +15,17 @@
 using namespace std;
 using namespace glm;
 
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+const unsigned int SRC_WIDTH = 800;
+const unsigned int SRC_HEIGHT = 600;
 
 static CCamera camera(vec3(0.0f, 0.0f, 3.0f));
-static float last_x = SCR_WIDTH / 2.0f;
-static float last_y = SCR_HEIGHT / 2.0f;
+static float last_x = SRC_WIDTH / 2.0f;
+static float last_y = SRC_HEIGHT / 2.0f;
 static bool first_mouse = true;
 
-static float current_frame = 0;
-static float delta_time = 0;
-static float last_frame = 0;
+static float curtFrame = 0;
+static float dltaFrame = 0;
+static float lastFrame = 0;
 
 static vec3 light_pos(1.2f, 1.0f, 2.0f);
 
@@ -38,19 +38,19 @@ static void process_keybord_input(GLFWwindow *window)
 
 	if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_W))
 	{
-		camera.on_keyboard_input(FORWARD, delta_time);
+		camera.on_keyboard_input(FORWARD, dltaFrame);
 	}
 	if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_S))
 	{
-		camera.on_keyboard_input(BACKWARD, delta_time);
+		camera.on_keyboard_input(BACKWARD, dltaFrame);
 	}
 	if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_A))
 	{
-		camera.on_keyboard_input(LEFT, delta_time);
+		camera.on_keyboard_input(LEFT, dltaFrame);
 	}
 	if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_D))
 	{
-		camera.on_keyboard_input(RIGHT, delta_time);
+		camera.on_keyboard_input(RIGHT, dltaFrame);
 	}
 }
 
@@ -85,7 +85,7 @@ int __main_02(int argc, char *argv[])
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+	GLFWwindow *window = glfwCreateWindow(SRC_WIDTH, SRC_HEIGHT, "LearnOpenGL", NULL, NULL);
 	if (NULL == window)
 	{
 		cout << "Failed to create GLFW window" << endl;
@@ -105,127 +105,112 @@ int __main_02(int argc, char *argv[])
 		return -1;
 	}
 
+	// enable depth
 	glEnable(GL_DEPTH_TEST);
 
-	// create shaders
-	CShader lighting_shader("shaders\\02-01a.vert", "shaders\\02-01a.frag");
-	CShader lamp_shader("shaders\\02-01b.vert", "shaders\\02-01b.frag");
-
-	// vertexes array
 	float vertices[] = {
-		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+	 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
 
-		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+	-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
 
-		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-		-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-		-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+	-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
 
-		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
 
-		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+	 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+	 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
 
-		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-		 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
+	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 	};
 
-	// send vertexes array to buffer
-	// and bind vertex array object
-	unsigned int vbo, cube_vao;
-	glGenVertexArrays(1, &cube_vao);
+	unsigned int vbo, vaoLight, vaoCube;
+	glGenVertexArrays(1, &vaoCube);
 	glGenBuffers(1, &vbo);
-
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	glBindVertexArray(cube_vao);
+	// set cube vertex array
+	glBindVertexArray(vaoCube);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
+	glBindVertexArray(0);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)0);
-	glEnableVertexAttribArray(0);
+	// set light vertex array
+	glGenVertexArrays(1, &vaoLight);	// create
+	glBindVertexArray(vaoLight);		// bind, change context
 
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-
-	unsigned int light_vao;
-	glGenVertexArrays(1, &light_vao);
-	glBindVertexArray(light_vao);
-
+	// why need to bind vbo again ???
+	// init bind -> set data -> set first va -> bind -> set second va ???
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
 	glEnableVertexAttribArray(0);
 
+	// create cube's shader and lamp's shader
+	CShader shaderCube("shaders/02-01-cube.vert", "shaders/02-01-cube.frag");
+	CShader shaderLamp("shaders/02-01-cube.vert", "shaders/02-01-cube.frag");
+
+	// here is the render loop
 	while (!glfwWindowShouldClose(window))
 	{
-		current_frame = glfwGetTime();
-		delta_time = current_frame - last_frame;
-		last_frame = current_frame;
+		curtFrame = glfwGetTime();
+		dltaFrame = curtFrame - lastFrame;
+		lastFrame = curtFrame;
 
 		process_keybord_input(window);
 
-		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		glClearColor(.1f, .1f, .1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		lighting_shader.use();
-		lighting_shader.uniform("objectColor", 1.0f, 0.5f, 0.31f);
-		lighting_shader.uniform("lightColor", 1.0f, 1.0f, 1.0f);
-		lighting_shader.uniform("lightPos", light_pos.x, light_pos.y, light_pos.z);
+		shaderCube.use();
+		shaderCube.uniform("objectColor", 1.0f, 0.5f, 0.31f);
+		shaderCube.uniform("lightColor",  1.0f, 1.0f, 1.0f);
 
-		mat4 projection = perspective(radians(camera.zoom()), (float)800 / (float)600, 0.1f, 100.0f);
+		mat4 projection = perspective(radians(camera.zoom()), float(SRC_WIDTH) / float(SRC_HEIGHT), 0.1f, 100.0f);
 		mat4 view = camera.get_view_matrix();
-		lighting_shader.uniform("projection", value_ptr(projection), 4);
-		lighting_shader.uniform("view", value_ptr(view), 4);
-
-		mat4 model;
-		lighting_shader.uniform("model", value_ptr(model), 4);
-
-		glBindVertexArray(cube_vao);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-
-		lamp_shader.use();
-		lamp_shader.uniform("projection", value_ptr(projection), 4);
-		lamp_shader.uniform("view", value_ptr(view), 4);
-
-		model = mat4(1.0f);
+		shaderCube.uniform("projection", value_ptr(projection), 4);
+		shaderCube.uniform("view", value_ptr(view), 4);
+		mat4 model = mat4();
 		model = translate(model, light_pos);
 		model = scale(model, vec3(0.2f));
-		lamp_shader.uniform("model", value_ptr(model), 4);
+		shaderLamp.uniform("model", value_ptr(model), 4);
 
-		glBindVertexArray(light_vao);
+		glBindVertexArray(vaoLight);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
 
-	glDeleteVertexArrays(1, &cube_vao);
-	glDeleteVertexArrays(1, &light_vao);
+	glDeleteVertexArrays(1, &vaoCube);
+	glDeleteVertexArrays(1, &vaoLight);
 	glDeleteBuffers(1, &vbo);
 
 	glfwTerminate();
