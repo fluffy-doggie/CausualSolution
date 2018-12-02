@@ -24,38 +24,38 @@ public:
 		float pitch = PITCH);
 
 	CCamera(
-		float pos_x,
-		float pos_y,
-		float pos_z,
-		float up_x,
-		float up_y,
-		float up_z,
+		float posX,
+		float posY,
+		float posZ,
+		float upX,
+		float upY,
+		float upZ,
 		float yaw,
 		float pitch);
 
 	~CCamera();
 
-	glm::mat4 get_view_matrix();
+	glm::mat4 getViewMatrix();
 
-	void on_keyboard_input(CameraMovement direction, float deltaTime);
-	void on_mouse_move(float offset_x, float offset_y, GLboolean constrain_pitch = true);
-	void on_mouse_scroll(float offset_y);
+	void onKeyboardInput(CameraMovement direction, float deltaTime);
+	void onMouseMove(float offsetX, float offsetY, GLboolean constrainPitch = true);
+	void onMouseScroll(float offsetY);
 
 	float zoom() { return _zoom; }
 private:
-	void _update_camera_vectors();
+	void _updateCameraVectors();
 
 	glm::vec3 _position;
 	glm::vec3 _front;
 	glm::vec3 _up;
 	glm::vec3 _right;
-	glm::vec3 _world_up;
+	glm::vec3 _worldUp;
 
 	float _yaw;
 	float _pitch;
 	
-	float _movement_speed;
-	float _mouse_sensitivity;
+	float _movementSpeed;
+	float _mouseSensitivity;
 	float _zoom;
 
 };

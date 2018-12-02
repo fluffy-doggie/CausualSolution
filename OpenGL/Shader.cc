@@ -7,66 +7,66 @@
 #include <fstream>
 using namespace std;
 
-unsigned int CShader::create_shader_by_string(const char *shader_source, GLenum type)
+unsigned int CShader::glCreateShaderByString(const char *source, GLenum type)
 {
 	// 创建Shader
 	unsigned int shader = glCreateShader(type);
 	// 设置源码
-	glShaderSource(shader, 1, &shader_source, NULL);
+	glShaderSource(shader, 1, &source, NULL);
 	// 编译Shader
 	glCompileShader(shader);
 
 	// 检查错误
-	int success; char log_buffer[512];
+	int success; char logBuffer[512];
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
 	if (!success)
 	{
-		glGetShaderInfoLog(shader, 512, NULL, log_buffer);
+		glGetShaderInfoLog(shader, 512, NULL, logBuffer);
 
-		const char *type_info = NULL;
+		const char *typeInfo = NULL;
 		if (type == GL_VERTEX_SHADER) {
-			type_info = "VERTEX";
+			typeInfo = "VERTEX";
 		}
 		else if (type == GL_VERTEX_SHADER) {
-			type_info = "FRAGMENT";
+			typeInfo = "FRAGMENT";
 		}
 		else {
-			type_info = "UNKNOWN";
+			typeInfo = "UNKNOWN";
 		}
-		cout << "ERROR::SHADER::" << type_info << "::COMPILATION_FAILED\n" << log_buffer << endl;
+		cout << "ERROR::SHADER::" << typeInfo << "::COMPILATION_FAILED\n" << logBuffer << endl;
 		return 0;
 	}
 
 	return shader;
 }
 
-unsigned int CShader::create_shader_by_file(const char *fname, GLenum type)
+unsigned int CShader::glCreateShaderByFile(const char *fname, GLenum type)
 {
-	auto shader_file = ifstream(fname, ios::in);
+	auto shaderFile = ifstream(fname, ios::in);
 
-	istreambuf_iterator<char> beg(shader_file), end;
+	istreambuf_iterator<char> beg(shaderFile), end;
 
 	string content(beg, end);
 
-	return create_shader_by_string(content.c_str(), type);
+	return glCreateShaderByString(content.c_str(), type);
 }
 
-CShader::CShader(const char *vertex_shader_path, const char *fragment_shader_path)
+CShader::CShader(const char *vertexShaderPath, const char *fragmentShaderPath)
 {
-	auto vshader = create_shader_by_file(vertex_shader_path, GL_VERTEX_SHADER);
-	auto fshader = create_shader_by_file(fragment_shader_path, GL_FRAGMENT_SHADER);
+	auto vshader = glCreateShaderByFile(vertexShaderPath, GL_VERTEX_SHADER);
+	auto fshader = glCreateShaderByFile(fragmentShaderPath, GL_FRAGMENT_SHADER);
 
-	_shader_id = glCreateProgram();
-	glAttachShader(_shader_id, vshader);
-	glAttachShader(_shader_id, fshader);
-	glLinkProgram(_shader_id);
+	_shaderId = glCreateProgram();
+	glAttachShader(_shaderId, vshader);
+	glAttachShader(_shaderId, fshader);
+	glLinkProgram(_shaderId);
 
-	int success; char info_log[512];
-	glGetProgramiv(_shader_id, GL_LINK_STATUS, &success);
+	int success; char infoLog[512];
+	glGetProgramiv(_shaderId, GL_LINK_STATUS, &success);
 	if (!success)
 	{
-		glGetProgramInfoLog(_shader_id, 512, NULL, info_log);
-		cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << info_log << endl;
+		glGetProgramInfoLog(_shaderId, 512, NULL, infoLog);
+		cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << endl;
 		return;
 	}
 

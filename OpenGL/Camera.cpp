@@ -8,32 +8,32 @@
 using namespace glm;
 CCamera::CCamera(vec3 position, vec3 up, float yaw, float pitch)
 :_front(vec3(0.0f, 0.0f, -1.0f))
-,_movement_speed(SPEED)
-,_mouse_sensitivity(SENSITIVITY)
+,_movementSpeed(SPEED)
+,_mouseSensitivity(SENSITIVITY)
 ,_zoom(ZOOM)
 ,_position(position)
-,_world_up(up)
+,_worldUp(up)
 ,_yaw(yaw)
 ,_pitch(pitch)
 {
-	_update_camera_vectors();
+	_updateCameraVectors();
 }
 
 CCamera::CCamera(
-	float pos_x, 
-	float pos_y, 
-	float pos_z, 
-	float up_x, 
-	float up_y, 
-	float up_z, 
+	float posX, 
+	float posY, 
+	float posZ, 
+	float upX, 
+	float upY, 
+	float upZ, 
 	float yaw, 
 	float pitch)
-:_position(vec3(pos_x, pos_y, pos_z))
-,_world_up(vec3(up_x, up_y, up_z))
+:_position(vec3(posX, posY, posZ))
+,_worldUp(vec3(upX, upY, upZ))
 ,_yaw(yaw)
 ,_pitch(pitch)
 {
-	_update_camera_vectors();
+	_updateCameraVectors();
 }
 
 
@@ -41,12 +41,12 @@ CCamera::~CCamera()
 {
 }
 
-mat4 CCamera::get_view_matrix()
+mat4 CCamera::getViewMatrix()
 {
 	return lookAt(_position, _position + _front, _up);
 }
 
-void CCamera::_update_camera_vectors()
+void CCamera::_updateCameraVectors()
 {
 	vec3 front(1.0f);
 	front.x = cos(radians(_yaw)) * cos(radians(_pitch));
@@ -54,13 +54,13 @@ void CCamera::_update_camera_vectors()
 	front.z = sin(radians(_yaw)) * cos(radians(_pitch));
 
 	_front = normalize(front);
-	_right = normalize(cross(_front, _world_up));
+	_right = normalize(cross(_front, _worldUp));
 	_up	   = normalize(cross(_right, _front));
 }
 
-void CCamera::on_keyboard_input(CameraMovement direction, float delta_time)
+void CCamera::onKeyboardInput(CameraMovement direction, float delta_time)
 {
-	float velocity = _movement_speed * delta_time;
+	float velocity = _movementSpeed * delta_time;
 	switch (direction)
 	{
 	case FORWARD:
@@ -78,10 +78,10 @@ void CCamera::on_keyboard_input(CameraMovement direction, float delta_time)
 	}
 }
 
-void CCamera::on_mouse_move(float offset_x, float offset_y, GLboolean constrain_pitch)
+void CCamera::onMouseMove(float offset_x, float offset_y, GLboolean constrain_pitch)
 {
-	offset_x *= _mouse_sensitivity;
-	offset_y *= _mouse_sensitivity;
+	offset_x *= _mouseSensitivity;
+	offset_y *= _mouseSensitivity;
 
 	_yaw   += offset_x;
 	_pitch += offset_y;
@@ -98,10 +98,10 @@ void CCamera::on_mouse_move(float offset_x, float offset_y, GLboolean constrain_
 		}
 	}
 
-	_update_camera_vectors();
+	_updateCameraVectors();
 }
 
-void CCamera::on_mouse_scroll(float offset_y)
+void CCamera::onMouseScroll(float offset_y)
 {
 	if (_zoom >= 1.0f && _zoom <= 45.0f)
 	{
