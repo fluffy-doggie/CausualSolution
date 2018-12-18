@@ -18,5 +18,8 @@
     <ClCompile Include="source.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="socket.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="socket.c" />
     <ClCompile Include="source.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
