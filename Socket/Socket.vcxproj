@@ -22,6 +22,9 @@
     <ClCompile Include="socket.c" />
     <ClCompile Include="source.c" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="socket.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{7076785F-9891-4579-B7FD-570EC30E7B84}</ProjectGuid>
