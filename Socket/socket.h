@@ -6,32 +6,32 @@
 #define MAX_BUFF_SIZE		8192	// 默认buffer - 8k
 #define MAX_WORKER_THREAD	16		// 最大工作线程 16
 
-typedef enum _IO_OPERATION {
+typedef enum _IO_OPERATION {		// 操作类型枚举
 	ClientIoAccept,
 	ClientIoRead,
 	ClientIoWrite
 } IO_OPERATION, *PIO_OPERATION;
 
-typedef struct _PER_IO_CONTEXT {
-	WSAOVERLAPPED			Overlapped;
-	char					Buffer[MAX_BUFF_SIZE];
-	WSABUF					wsabuf;
-	int						nTotalBytes;
-	int						nSentBytes;
-	IO_OPERATION			IOOperation;
-	SOCKET					SocketAccept;
+typedef struct _PER_IO_CONTEXT {				// IO上下文
+	WSAOVERLAPPED			Overlapped;				//
+	char					Buffer[MAX_BUFF_SIZE];	// 缓存
+	WSABUF					wsabuf;					// wsabuf？
+	int						nTotalBytes;			// 总字节数
+	int						nSentBytes;				// 已发送字节数
+	IO_OPERATION			IOOperation;			//
+	SOCKET					SocketAccept;			// ?
 
 	struct _PER_IO_CONTEXT	*pIOContextForward;	// 链表
 } PER_IO_CONTEXT, *PPER_IO_CONTEXT;
 
-typedef struct _PER_SOCKET_CONTEXT {
-	SOCKET						Socket;
-	LPFN_ACCEPTEX				fnAcceptEx;
+typedef struct _PER_SOCKET_CONTEXT {			// Socket上下文
+	SOCKET						Socket;			// Socket
+	LPFN_ACCEPTEX				fnAcceptEx;		// 函数指针
 
 
-	PPER_IO_CONTEXT				pIOContext;
-	struct _PER_SOCKET_CONTEXT	*pCtxtBack;
-	struct _PER_SOCKET_CONTEXT	*pCtxtForward;	// 双向链表
+	PPER_IO_CONTEXT				pIOContext;		// IO上下文
+	struct _PER_SOCKET_CONTEXT	*pCtxtBack;		// 后指针
+	struct _PER_SOCKET_CONTEXT	*pCtxtForward;	// 前指针
 } PER_SOCKET_CONTEXT, *PPER_SOCKET_CONTEXT;
 
 BOOL ValidOptions(int argc, char *argv[]);
