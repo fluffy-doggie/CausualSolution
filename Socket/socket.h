@@ -12,8 +12,8 @@ typedef enum _IO_OPERATION {		// 操作类型枚举
 	ClientIoWrite
 } IO_OPERATION, *PIO_OPERATION;
 
-typedef struct _PER_IO_CONTEXT {				// IO上下文
-	WSAOVERLAPPED			Overlapped;				//
+typedef struct _PER_IO_CONTEXT {					// IO上下文
+	WSAOVERLAPPED			Overlapped;				// Overlapped结构-首地址
 	char					Buffer[MAX_BUFF_SIZE];	// 缓存
 	WSABUF					wsabuf;					// wsabuf？
 	int						nTotalBytes;			// 总字节数
