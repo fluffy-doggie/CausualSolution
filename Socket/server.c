@@ -84,7 +84,7 @@
 #include <WS2tcpip.h>
 #include <strsafe.h>
 
-#include "socket.h"
+#include "server.h"
 
 char *g_Port = DEFAULT_PORT;	// 端口
 BOOL g_bEndServer = FALSE;	// 
@@ -99,7 +99,7 @@ PPER_SOCKET_CONTEXT g_pCtxtList = NULL;			// 套接字环境链表
 
 CRITICAL_SECTION g_CriticalSection;	// 临界区
 
-int myprintf(const char *lpFormat, ...)
+int myprintf(const TCHAR *lpFormat, ...)
 {
 	// 该函数专用缓存区 - 1k / 2k
 	static TCHAR s_buffer[1024];
@@ -117,9 +117,9 @@ int myprintf(const char *lpFormat, ...)
 	dwLen = lstrlen(lpFormat);
 	hRet = StringCchVPrintf(s_buffer, sizeof(s_buffer), lpFormat, arglist);
 
-	if (dwRet >= dwLen || GetLastError() == 0)
+	if (SUCCEEDED(hRet))
+	//if (dwRet >= dwLen || GetLastError() == 0)
 	{	// equals: dwLen == 0 or no recently error
-
 		hOut = GetStdHandle(STD_OUTPUT_HANDLE);
 		if (hOut != INVALID_HANDLE_VALUE)
 		{
@@ -473,7 +473,22 @@ BOOL CreateListenSocket(void)
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_protocol = IPPROTO_IP;
 
-	if (getaddrinfo(NULL, g_Port, &hints, &addrlocal) != 0)
+	// getaddrinfo函数提供独立于协议的从ANSI主机名到地址的转换。
+	if (getaddrinfo(
+		// 指向以NULL结尾的ANSI字符串的指针，该字符串包含主机（节点）名称或数字主机地址字符串。
+		// 对于Internet协议，数字主机地址字符串是点分十进制IPv4地址或IPv6十六进制地址。
+		NULL, 
+		// 指向以NULL结尾的ANSI字符串的指针，该字符串包含表示为字符串的服务名称或端口号。 
+		// 服务名称是端口号的字符串别名。 
+		// 例如，“http”是由Internet工程任务组（IETF）定义的端口80的别名，作为Web服务器用于HTTP协议的默认端口。 
+		// 可用服务名称：%WINDIR%\system32\drivers\etc\services
+		g_Port, 
+		// 指向addrinfo结构的指针，该结构提供有关调用者支持的套接字类型的提示。
+		// pHints参数指向的addrinfo结构的ai_addrlen，ai_canonname，ai_addr和ai_next成员必须为零或NULL。
+		// 否则，GetAddrInfoEx函数将失败并返回WSANO_RECOVERY。
+		&hints, 
+		// 指向包含有关主机的响应信息的一个或多个addrinfo结构的链接列表的指针 。
+		&addrlocal) != 0)
 	{
 		myprintf(TEXT("getaddrinfo() failed with error %d\n"), WSAGetLastError());
 		return (FALSE);
@@ -513,6 +528,7 @@ BOOL CreateListenSocket(void)
 	return (TRUE);
 }
 
+// 创建接收套接字
 BOOL CreateAcceptSocket(BOOL fUpdateIOCP)
 {
 	int nRet = 0;
@@ -523,6 +539,7 @@ BOOL CreateAcceptSocket(BOOL fUpdateIOCP)
 
 	if (fUpdateIOCP)
 	{
+		// 创建监听套接字的上下文
 		g_pCtxtListenSocket = UpdateCompletionPort(g_sdListen, ClientIoAccept, FALSE);
 		if (g_pCtxtListenSocket == NULL)
 		{
@@ -530,15 +547,34 @@ BOOL CreateAcceptSocket(BOOL fUpdateIOCP)
 			return (FALSE);
 		}
 
+		// 获取AcceptEx的函数地址
+
+		// WSAIoctl函数控制套接字的模式。
 		nRet = WSAIoctl(
 			g_sdListen,
+			// 
+			// 执行的操作控制代码。
 			SIO_GET_EXTENSION_FUNCTION_POINTER,
+			//
+			// 指向输入缓冲区的指针。
 			&acceptex_guid,
+			// 
+			// 输入缓冲区的大小（以字节为单位）。
 			sizeof(acceptex_guid),
+			//
+			// 指向输出缓冲区的指针。
 			&g_pCtxtListenSocket->fnAcceptEx,
+			// 
+			// 输出缓冲区的大小（以字节为单位）。
 			sizeof(g_pCtxtListenSocket->fnAcceptEx),
+			//
+			// 指向实际输出字节数的指针。
 			&bytes,
+			//
+			// 指向WSAOVERLAPPED结构的指针（对于非重叠套接字，将被忽略）。
 			NULL,
+			//
+			// 操作完成时调用的完成例程指针（对于非重叠套接字，将被忽略）。
 			NULL
 		);
 		if (nRet == SOCKET_ERROR)
@@ -555,11 +591,33 @@ BOOL CreateAcceptSocket(BOOL fUpdateIOCP)
 		return (FALSE);
 	}
 
-	nRet = g_pCtxtListenSocket->fnAcceptEx(g_sdListen, g_pCtxtListenSocket->pIOContext->SocketAccept,
+	// AcceptEx函数接受新连接，返回本地和远程地址，并接收客户端应用程序发送的第一个数据块。
+	nRet = g_pCtxtListenSocket->fnAcceptEx(
+		// 标识已使用listen函数调用的套接字的描述符。
+		// 服务器应用程序等待连接此套接字的尝试。
+		g_sdListen, 
+		// 标识要接受传入连接的套接字的描述符。非绑定或已连接
+		g_pCtxtListenSocket->pIOContext->SocketAccept,
+		// 指向缓冲区的指针，该缓冲区接收在新连接上发送的第一个数据块，服务器的本地地址以及客户端的远程地址。 
+		// 接收数据从偏移零开始写入缓冲区的第一部分，而地址写入缓冲区的后半部分。 
+		// 必须指定此参数。
 		(LPVOID)(g_pCtxtListenSocket->pIOContext->Buffer),
+		// lpOutputBuffer中将用于缓冲区开头的实际接收数据的字节数。 
+		// 此大小不应包括服务器本地地址的大小，也不应包括客户端的远程地址; 它们被附加到输出缓冲区。 
+		// 如果dwReceiveDataLength为零，则接受连接将不会导致接收操作。 
+		// 而是连接一旦到达，AcceptEx就会完成，不会等待任何数据。
 		MAX_BUFF_SIZE - (2 * (sizeof(SOCKADDR_STORAGE) + 16)),
-		sizeof(SOCKADDR_STORAGE) + 16, sizeof(SOCKADDR_STORAGE) + 16,
+		// 为本地地址信息保留的字节数。
+		// 此值必须至少比使用的传输协议的最大地址长度长16个字节。
+		sizeof(SOCKADDR_STORAGE) + 16, 
+		// 为远程地址信息保留的字节数。
+		// 此值必须至少比使用的传输协议的最大地址长度长16个字节。不能为零。
+		sizeof(SOCKADDR_STORAGE) + 16,
+		// 指向DWORD的指针，该DWORD接收接收的字节数。 
+		// 仅当操作同步完成时才设置此参数。 
+		// 如果它返回ERROR_IO_PENDING并在稍后完成，则永远不会设置此变量，您必须获取从完成通知机制读取的字节数。
 		&dwRecvNumBytes,
+		// OVERLAPPED结构，用于处理请求。必须指定此参数;它不能为NULL。
 		(LPOVERLAPPED) &(g_pCtxtListenSocket->pIOContext->Overlapped));
 
 	if (nRet == SOCKET_ERROR && (ERROR_IO_PENDING != WSAGetLastError()))
@@ -846,6 +904,7 @@ PPER_SOCKET_CONTEXT UpdateCompletionPort(SOCKET sd, IO_OPERATION ClientIo, BOOL 
 		return (NULL);
 	}
 
+	// 将套接字关联到现有的IO完成端口
 	g_hIOCP = CreateIoCompletionPort((HANDLE)sd, g_hIOCP, (DWORD_PTR)lpPerSocketContext, 0);
 	if (g_hIOCP == NULL)
 	{

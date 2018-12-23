@@ -19,11 +19,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="socket.c" />
+    <ClCompile Include="client.c" />
+    <ClCompile Include="server.c" />
     <ClCompile Include="source.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="socket.h" />
+    <ClInclude Include="client.h" />
+    <ClInclude Include="server.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
