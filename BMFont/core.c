@@ -4,5 +4,4 @@
 
 #include "bmfont.h"
 
-#include "core.h";
-
+#include "core.h"

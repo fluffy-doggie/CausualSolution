@@ -40,6 +40,7 @@ typedef struct _FONTDESC {
 
 } FONTDESC, *LPFONTDESC;
 
+// file descriptor
 typedef struct _FILEDESC {
 	DWORD dwWidth;
 	DWORD dwHeight;

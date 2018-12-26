@@ -121,11 +121,13 @@
   <ItemGroup>
     <ClCompile Include="bmfont.c" />
     <ClCompile Include="core.c" />
+    <ClCompile Include="gui.c" />
     <ClCompile Include="worker.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bmfont.h" />
     <ClInclude Include="core.h" />
+    <ClInclude Include="gui.h" />
     <ClInclude Include="worker.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

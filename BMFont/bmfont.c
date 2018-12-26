@@ -7,14 +7,18 @@
 #include <crtdbg.h>
 
 // 项目头文件
-#include "bmfont.h";
+#include "bmfont.h"
+#include "gui.h"
 
 // path 操作函数
 #pragma comment(lib, "shlwapi.lib")
 
 // 定义全局变量
 OPTIONS g_Options;
+HWND g_hWndMain;
+
 TCHAR g_szClassName[] = TEXT("BMFontClass");
+TCHAR g_szWndName[] = TEXT("BMFont Maker");
 
 int CALLBACK EnumFontFamExProc(
 	const LOGFONT    *lpelfe,
@@ -41,41 +45,20 @@ int _tmain(int argc, TCHAR *argv[])
 		return -1;
 	}
 
-	LOGFONT lf;
-	ZeroMemory(&lf, sizeof(lf));
-	lf.lfCharSet = GB2312_CHARSET;
+	if (g_Options.bUseGUI) {
+		return WndMainLoop(GetModuleHandle(NULL), NULL, NULL, SW_SHOW);
+	}
 
-	// 枚举所有字体
-	HDC dc = GetDC(NULL);
-	EnumFontFamiliesEx(dc, &lf, (FONTENUMPROC)EnumFontFamExProc, NULL, 0);
-	ReleaseDC(NULL, dc);
+	//LOGFONT lf;
+	//ZeroMemory(&lf, sizeof(lf));
+	//lf.lfCharSet = GB2312_CHARSET;
+
+	//// 枚举所有字体
+	//HDC dc = GetDC(NULL);
+	//EnumFontFamiliesEx(dc, &lf, (FONTENUMPROC)EnumFontFamExProc, NULL, 0);
+	//ReleaseDC(NULL, dc);
 
 	return 0;
-}
-
-// 注册窗口类
-ATOM RegisterWndClass(HINSTANCE hInstance) {
-	WNDCLASSEX wndc;
-	ZeroMemory(&wndc, sizeof(wndc));
-
-	wndc.cbSize = sizeof(wndc);
-	wndc.style = CS_HREDRAW | CS_VREDRAW;
-	wndc.lpfnWndProc = (WNDPROC)MainWndProc;
-	wndc.cbClsExtra = 0;
-	wndc.cbWndExtra = 0;
-	wndc.hInstance = hInstance;
-	wndc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-	wndc.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wndc.hbrBackground = GetStockObject(WHITE_BRUSH);
-	wndc.lpszMenuName = NULL;
-	wndc.lpszClassName = g_szClassName;
-
-	return RegisterClass(&wndc);
-}
-
-// 窗口过程函数
-LRESULT CALLBACK MainWndProc(HWND hWnd, UINT uMessage, WPARAM wParam, LPARAM lPawam) {
-	return DefWindowProc(hWnd, uMessage, wParam, lPawam);
 }
 
 BOOL ValidOptions(int argc, TCHAR *argv[])
@@ -139,12 +122,20 @@ BOOL ValidOptions(int argc, TCHAR *argv[])
 }
 
 // 显示如何使用
-void Usage() {
+void Usage_ZhCN() {
+	xprintf(TEXT("\n使用说明：\n"));
+	xprintf(TEXT("    %s\t[--gui] --[port=<port>] [--help]\n"), g_Options.szAppName);
+	xprintf(TEXT("\t--gui\t\t\t通过窗口运行程序\n"));
+	xprintf(TEXT("\t--port=[<port>]\t\t接收来自网络的任务\n"));
+	xprintf(TEXT("\t--help\t\t\t显示帮助页面\n"));
+}
+
+void Usage_EnUS() {
 	xprintf(TEXT("\nUsage:\n"));
 	xprintf(TEXT("    %s\t[--gui] --[port=<port>] [--help]\n"), g_Options.szAppName);
-	xprintf(TEXT("\t--gui\t\t\tRun this program trough windows.\n"));
-	xprintf(TEXT("\t--port=[<port>]\t\tAccept internet command through this port.\n"));
-	xprintf(TEXT("\t--help\t\t\tShow this page.\n"));
+	xprintf(TEXT("\t--gui\t\t\tRun this program though windows\n"));
+	xprintf(TEXT("\t--port=[<port>]\t\tReceive commands from network\n"));
+	xprintf(TEXT("\t--help\t\t\tDisplay this page\n"));
 }
 
 // 获取字符长度 不包含\0
@@ -171,7 +162,6 @@ void xprintf(const TCHAR *lpFormat, ...)
 	DWORD dwLength;
 	WriteConsole(hOut, s_szBuffer, xstrlen(s_szBuffer), &dwLength, NULL);
 }
-
 
 // Usage:
 

@@ -16,10 +16,9 @@ typedef struct _OPTIONS {
 
 BOOL ValidOptions(int argc, TCHAR *argv[]);
 
-void Usage();
+void Usage_ZhCN();
+void Usage_EnUS();
 
-LRESULT CALLBACK MainWndProc(HWND hWnd, UINT uMessage, WPARAM wParam, LPARAM lParam);
-
-ATOM RegisterWndClass(HINSTANCE hInstance);
+#define Usage Usage_ZhCN
 
 #endif
