@@ -8,9 +8,43 @@ extern TCHAR g_szWndName[];
 
 extern HWND g_hWndMain;
 
+void DrawGlyph(HFONT hFont, int ch) {
+	//// 创建内存dc
+	//HDC dc = CreateCompatibleDC(0);
+	//// 选择字体
+	//HFONT oldFont = (HFONT)SelectObject(dc, hFont);
+
+	//// 字体矩阵
+	//TEXTMETRIC tm;
+	//GetTextMetrics(dc, &tm);
+
+	//if (SetGraphicsMode(dc, GM_ADVANCED)) {
+	//	XFORM mtx;
+	//	mtx.eM11 = 1.0f;
+	//	mtx.eM12 = 0;
+	//	mtx.eM21 = 0;
+	//	mtx.eM22 = 1;
+	//	mtx.eDx = 0;
+	//	mtx.eDy = 0;
+	//	SetWorldTransform(dc, &mtx);
+	//}
+
+	GLYPHMETRICS gm;
+}
+
 // 窗口过程函数
 LRESULT CALLBACK MainWndProc(HWND hWnd, UINT uMessage, WPARAM wParam, LPARAM lPawam) {
-	return DefWindowProc(hWnd, uMessage, wParam, lPawam);
+	switch (uMessage)
+	{
+	case WM_DESTROY:
+		PostQuitMessage(0);
+		break;
+	default:
+		return DefWindowProc(hWnd, uMessage, wParam, lPawam);
+		break;
+	}
+
+	return 0;
 }
 
 // 注册窗口类
@@ -58,10 +92,6 @@ BOOL CreateMainWindow(HINSTANCE hInstance, int nCmdShow) {
 
 int WndMainLoop() {
 	HINSTANCE hInstance = GetModuleHandle(NULL);
-
-	//HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow
-	
-	//DWORD ret = RegisterWndClass(hInstance);
 
 	if (!RegisterWndClass(hInstance)) {
 		TCHAR buffer[512];
